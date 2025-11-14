@@ -1,101 +1,180 @@
 #include <stdio.h>
 
 // Desafio Batalha Naval - MateCheck
-// Nível Novato - Posicionamento dos Navios
+// Nível Aventureiro - Tabuleiro Completo e Navios Diagonais
 // Aluno José Ageu Layme Neto
 
-//função para imprimir o tabuleiro
-void imprimirTabuleiro(int tabuleiro[10][10]){ 
-    int i, j;
+/* Definição dos vetores NAVIO:
+    navio[0]: tamanho do navio
+    navio[1]: direção do navio: 0-horizontal; 1-vertical; 2-diagonal subindo; 3-diagonal descendo
+    navio[2]: linha em que o navio está posicionado
+    navio[3]: coluna em que o navio está posicionado
+*/
 
+// Declaração de constantes
+// Tamanho do tabuleiro
+#define LINHAS 10
+#define COLUNAS 10
+
+//função para imprimir o tabuleiro. recebe como parâmetro uma matriz
+void imprimirTabuleiro(int tabuleiro[LINHAS][COLUNAS]){ 
     //imprimindo as posições das colunas
-    printf("|+|");
-    for (i=0; i<10; i++){
+    printf("| |");
+    for (int i = 0; i < COLUNAS; i++){
         printf("\033[4m|%d\033[0m", i);
     }
     printf("|\n");
 
     //imprimindo o tabuleiro com posições das linhas
-    for (i=0; i<10; i++){
-        printf("|%d|-", i);
-        for (j=0; j<10; j++){
-            printf("%d-", tabuleiro[i][j]);
+    for (int i = 0; i < LINHAS; i++){
+        printf("|%d| ", i);
+        for (int j = 0; j < COLUNAS; j++){
+            printf("%d ", tabuleiro[i][j]);
         }
         printf("\n");
     }
 }
 
 //função para verificar os parâmetros do navio
-void verificarNavio(int navio[4], char nomeDoNavio[], int tabuleiro[10][10]){
-    int i, j; 
+void verificarNavio(int navio[4], char nomeDoNavio[], int tabuleiro[LINHAS][COLUNAS]){
     int flagSobreposicao = 0;
+    int flagEstouroTabuleiro = 0;
+    int tamanhoDoNavio = navio[0];
+    int sentidoDoNavio = navio[1];
+    int linhaDoNavio = navio[2];
+    int colunaDoNavio = navio[3];
 
     printf("CHECKLIST DE VERIFICAÇÃO DOS PARÂMETROS DO %s\n", nomeDoNavio);
 
-    //impressão dos dados do navio
-    navio[1] == 0 ?
-        printf("Navio tamanho %d, sentido Horizontal, posicionado nas coordenadas L%d-C%d a L%d-C%d\n", navio[0], navio[2], navio[3], navio[2], navio[3]+navio[0]-1) :
-        printf("Navio tamanho %d, sentido Vertical, posicionado nas coordenadas L%d-C%d a L%d-C%d\n", navio[0], navio[2], navio[3], navio[2]+navio[0]-1, navio[3]) ;        
+    switch (sentidoDoNavio) {
+    case 0: //navio na horizontal
+        //impressão dos dados do navio
+        printf("Navio tamanho %d, sentido Horizontal, posicionado nas coordenadas L%d-C%d a L%d-C%d\n", tamanhoDoNavio, linhaDoNavio, colunaDoNavio, linhaDoNavio, colunaDoNavio+tamanhoDoNavio-1);
 
-    //verificando o tamanho do navio
+        //verificando estouro dos limites do tabuleiro
+        if (linhaDoNavio > (LINHAS-1) || (colunaDoNavio + tamanhoDoNavio) > (COLUNAS-1)) {
+            flagEstouroTabuleiro = 1;
+        }
+
+        //verificando se há sobreposição de navios
+        while (tamanhoDoNavio > 0) {
+            flagSobreposicao += tabuleiro[linhaDoNavio][colunaDoNavio] == 3 ? 1 : 0;
+            colunaDoNavio++;
+            tamanhoDoNavio--;
+        }
+        break;
+
+    case 1: //navio na vertical descendente
+        printf("Navio tamanho %d, sentido Vertical, posicionado nas coordenadas L%d-C%d a L%d-C%d\n", tamanhoDoNavio, linhaDoNavio, colunaDoNavio, linhaDoNavio+tamanhoDoNavio-1, colunaDoNavio);
+
+        if ((linhaDoNavio + tamanhoDoNavio) > (LINHAS-1) || colunaDoNavio > (COLUNAS-1)) {
+            flagEstouroTabuleiro = 1;
+        }
+    
+        while (tamanhoDoNavio > 0) {
+            flagSobreposicao += tabuleiro[linhaDoNavio][colunaDoNavio] == 3 ? 1 : 0;
+            linhaDoNavio++;
+            tamanhoDoNavio--;
+        }
+        break;
+
+    case 2: //navio na diagonal ascendente
+        printf("Navio tamanho %d, sentido Diagonal Ascendente, posicionado nas coordenadas L%d-C%d a L%d-C%d\n", tamanhoDoNavio, linhaDoNavio, colunaDoNavio, linhaDoNavio-tamanhoDoNavio+1, colunaDoNavio+tamanhoDoNavio-1);
+
+        if ((linhaDoNavio - tamanhoDoNavio) < 0 || (colunaDoNavio + tamanhoDoNavio) > (COLUNAS-1)) {
+           flagEstouroTabuleiro = 1;
+        }
+
+        while (tamanhoDoNavio > 0) {
+            flagSobreposicao += tabuleiro[linhaDoNavio][colunaDoNavio] == 3 ? 1 : 0;
+            linhaDoNavio--;
+            colunaDoNavio++;
+            tamanhoDoNavio--;
+        }
+        break;
+
+    case 3: //navio na diagonal descendente
+        printf("Navio tamanho %d, sentido Diagonal Descendente, posicionado nas coordenadas L%d-C%d a L%d-C%d\n", tamanhoDoNavio, linhaDoNavio, colunaDoNavio, linhaDoNavio+tamanhoDoNavio-1, colunaDoNavio+tamanhoDoNavio-1);
+
+        if ((linhaDoNavio + tamanhoDoNavio) > (LINHAS-1) || (colunaDoNavio + tamanhoDoNavio) > (COLUNAS-1)) {
+            flagEstouroTabuleiro = 1;
+        }
+
+        while (tamanhoDoNavio > 0) {
+            flagSobreposicao += tabuleiro[linhaDoNavio][colunaDoNavio] == 3 ? 1 : 0;
+            linhaDoNavio++;
+            colunaDoNavio++;
+            tamanhoDoNavio--;
+        }
+        break;
+    
+    default:
+        break;
+    }
+
+    //verificando o tamanho do navio e imprimindo os resultados das verificações
     printf("Tamanho do navio: "); 
-    navio[0] > 10 ? 
-        printf("Maior que o limite de 10\n") : 
+    navio[0] > LINHAS ? 
+        printf("Maior que o limite de %d\n", LINHAS) : 
         printf("Ok\n");
 
-    //verificando estouro dos limites do tabuleiro
     printf("Limites do tabuleiro: ");
-    if (navio[1] == 0){
-        (navio[0] + navio[3]) > 9 ? 
-            printf("Navio posicionado além do limite do tabuleiro\n") :
-            printf("Ok\n"); 
-    }else{
-        if (navio[1] == 1){
-            (navio[0] + navio[2]) > 9 ?
-                printf("Navio posicionado além do limite do tabuleiro\n") :
-                printf("Ok\n"); 
-        }
-    }
+    flagEstouroTabuleiro == 0 ?
+        printf("Ok\n") :
+        printf("Navio posicionado além do limite do tabuleiro\n");
 
-    //verificando se há sobreposição de navios
     printf("Sobreposição de navios: ");
-    if (navio[1] == 0){
-        for (j=0; j<navio[0]; j++){
-            flagSobreposicao += tabuleiro[navio[2]][j+navio[3]] == 3 ? 1 : 0;
-        }
-
-    }else{
-        for (i=0; i<navio[0]; i++){
-            flagSobreposicao += tabuleiro[i+navio[2]][navio[3]] == 3 ? 1 : 0;
-        }
-    }
-    flagSobreposicao == 0 ? printf("Ok\n") : printf("Há navios sobrepostos\n");    
+    flagSobreposicao == 0 ? 
+        printf("Ok\n") : 
+        printf("Há navios sobrepostos\n");    
 
     printf("\n");
 }
 
-void posicionarNavio(int tabuleiro[10][10], int navio[4]){
-    int i, j;
-
-    if (navio[1] == 0){
-        for (j=0; j<navio[0]; j++){
-            tabuleiro[navio[2]][j+navio[3]] = 3;
+void posicionarNavio(int tabuleiro[LINHAS][COLUNAS], int navio[4]){
+    switch (navio[1]) {
+    case 0:
+        while (navio[0] > 0) {
+            tabuleiro[navio[2]][navio[3]] = 3;
+            navio[3]++;
+            navio[0]--;
         }
-    }else{
-        for (i=0; i<navio[0]; i++){
-            tabuleiro[i+navio[2]][navio[3]] = 3;
+        break;
+    case 1:
+        while (navio[0] > 0) {
+            tabuleiro[navio[2]][navio[3]] = 3;
+            navio[2]++;
+            navio[0]--;
         }
-    }    
+        break;
+    case 2:
+        while (navio[0] > 0) {
+            tabuleiro[navio[2]][navio[3]] = 3;
+            navio[2]--;
+            navio[3]++;
+            navio[0]--;
+        }
+        break;
+    case 3:
+        while (navio[0] > 0) {
+            tabuleiro[navio[2]][navio[3]] = 3;
+            navio[2]++;
+            navio[3]++;
+            navio[0]--;
+        }
+        break;    
+    default:
+        break;
+    }
 }
 
 int main(){
-    int tabuleiro[10][10]; //Inicialização do tabuleiro
-    int i, j;
-    int navio1[4], navio2[4];
+    int tabuleiro[LINHAS][COLUNAS]; //Inicialização do tabuleiro
+    int navio1[4], navio2[4], navio3[4], navio4[4]; //inicializando os navios
 
     //inicializando todas as posições do tabuleiro com 0, representando água
-    for (i=0; i<10; i++){
-        for (j=0; j<10; j++){
+    for (int i = 0;  i < LINHAS; i++){
+        for (int j = 0; j < COLUNAS; j++){
             tabuleiro[i][j] = 0;
         }
     }
@@ -107,8 +186,8 @@ int main(){
 
     //definindo o navio 1
     navio1[0] = 3; //tamanho do navio
-    navio1[1] = 0; //direção do navio: 0 para horizontal e 1 para vertical
-    navio1[2] = 1; //linha em que o navio está posicionado
+    navio1[1] = 0; //direção do navio: 0-horizontal; 1-vertical; 2-diagonal subindo; 3-diagonal descendo
+    navio1[2] = 3; //linha em que o navio está posicionado
     navio1[3] = 4; //coluna em que o navio está posicionado
     verificarNavio(navio1, "NAVIO 1", tabuleiro); //chamada da função que verifica alguma irregularidade nos parâmatros do navio
     posicionarNavio(tabuleiro, navio1); //chamada da função para posicionar o navio no tabuleiro
@@ -117,12 +196,34 @@ int main(){
     printf("\n");
 
     //definindo o navio 2
-    navio2[0] = 5; //tamanho do navio
-    navio2[1] = 1; //direção do navio: 0 para horizontal e 1 para vertical
+    navio2[0] = 3; //tamanho do navio
+    navio2[1] = 1; //direção do navio: 0-horizontal; 1-vertical; 2-diagonal subindo; 3-diagonal descendo
     navio2[2] = 2; //linha em que o navio está posicionado
     navio2[3] = 9; //coluna em que o navio está posicionado
     verificarNavio(navio2, "NAVIO 2", tabuleiro); //chamada da função que verifica alguma irregularidade nos parâmatros do navio
     posicionarNavio(tabuleiro, navio2); //chamada da função para posicionar o navio no tabuleiro
+    printf("TABULEIRO APÓS POSICIONAR O NAVIO\n");
+    imprimirTabuleiro(tabuleiro); //chamada da função para imprimir o tabuleiro após posicionar o navio
+    printf("\n");
+
+    //definindo o navio 3
+    navio3[0] = 3; //tamanho do navio
+    navio3[1] = 2; //direção do navio: 0-horizontal; 1-vertical; 2-diagonal subindo; 3-diagonal descendo
+    navio3[2] = 5; //linha em que o navio está posicionado
+    navio3[3] = 0; //coluna em que o navio está posicionado
+    verificarNavio(navio3, "NAVIO 3", tabuleiro); //chamada da função que verifica alguma irregularidade nos parâmatros do navio
+    posicionarNavio(tabuleiro, navio3); //chamada da função para posicionar o navio no tabuleiro
+    printf("TABULEIRO APÓS POSICIONAR O NAVIO\n");
+    imprimirTabuleiro(tabuleiro); //chamada da função para imprimir o tabuleiro após posicionar o navio
+    printf("\n");
+
+    //definindo o navio 4
+    navio4[0] = 3; //tamanho do navio
+    navio4[1] = 3; //direção do navio: 0-horizontal; 1-vertical; 2-diagonal subindo; 3-diagonal descendo
+    navio4[2] = 5; //linha em que o navio está posicionado
+    navio4[3] = 6; //coluna em que o navio está posicionado
+    verificarNavio(navio4, "NAVIO 4", tabuleiro); //chamada da função que verifica alguma irregularidade nos parâmatros do navio
+    posicionarNavio(tabuleiro, navio4); //chamada da função para posicionar o navio no tabuleiro
 
     //imprimindo o tabuleiro após o posicionamento de todos os navios
     printf("TABULEIRO COM TODOS OS NAVIOS POSICIONADOS\n");
