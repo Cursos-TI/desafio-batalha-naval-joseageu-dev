@@ -1,8 +1,11 @@
 #include <stdio.h>
 
 // Desafio Batalha Naval - MateCheck
-// Nível Aventureiro - Tabuleiro Completo e Navios Diagonais
+// Nível Mestre - Habilidades especiais e áreas de efeito
 // Aluno José Ageu Layme Neto
+
+#include <stdio.h>
+#include <stdlib.h>
 
 /* Definição dos vetores NAVIO:
     navio[0]: tamanho do navio
@@ -168,16 +171,99 @@ void posicionarNavio(int tabuleiro[LINHAS][COLUNAS], int navio[4]){
     }
 }
 
-int main(){
-    int tabuleiro[LINHAS][COLUNAS]; //Inicialização do tabuleiro
-    int navio1[4], navio2[4], navio3[4], navio4[4]; //inicializando os navios
+// Matrizes de habilidades
+void aplicarHabilidade(int opcao, int linha, int coluna, int matrizHabilidade[LINHAS][COLUNAS]){
+    /* Parâmetros: 
+        Opção da habilidade: 1: Cone / 2: Cruz / 3: Octaedro
+        Linha e Coluna: coordenadas do topo do cone ou centro da cruz e octaedro
+        Matriz: matriz onde será aplicada a habilidade
+    */
 
-    //inicializando todas as posições do tabuleiro com 0, representando água
-    for (int i = 0;  i < LINHAS; i++){
-        for (int j = 0; j < COLUNAS; j++){
-            tabuleiro[i][j] = 0;
+    int i, j; // Variáveis de iteração para linhas (i) e colunas (j)
+
+    switch (opcao){
+    case 1: //habilidade Cone
+        int largura; // Variável para calcular a largura da base (número de colunas a preencher)
+        int altura = 4;
+
+        // --- Estrutura de Repetição para Formar o Cone ---
+        for (i = linha; i < linha + altura; i++) {
+            largura = 1 + 2 * (i - linha);
+
+            // Determina a coluna inicial (j_inicio) para a largura calculada
+            int j_inicio = coluna - (largura - 1) / 2;
+
+            // Determina a coluna final (j_fim)
+            int j_fim = coluna + (largura - 1) / 2;
+        
+            // --- Estrutura de Repetição Aninhada para Preencher a Linha ---
+            for (j = j_inicio; j <= j_fim; j++) {
+                // Verifica se a coluna está dentro dos limites da matriz (0 a 9)
+                if (j >= 0 && j < COLUNAS) {
+                    matrizHabilidade[i][j] = 1;
+                }
+            }
+        }
+        break;
+
+    case 2: //habilidade Cruz
+    int dist_vertical, dist_horizontal;
+    #define RAIO_CRUZ 2   // Unidades máximas de distância a partir do centro
+
+    // Estrutura de Repetição para Formar a Cruz Ortogonal ('+')
+    for (i = 0; i < LINHAS; i++) {
+        for (j = 0; j < COLUNAS; j++) {
+            
+            dist_vertical = abs(i - linha);
+            dist_horizontal = abs(j - coluna);
+            
+            /* Um ponto (i, j) pertence à cruz ortogonal se:
+                Ele está EXATAMENTE na linha central (dist_vertical == 0) E dentro da extensão (dist_horizontal <= RAIO_CRUZ)
+                OU
+                Ele está EXATAMENTE na coluna central (dist_horizontal == 0) E dentro da extensão (dist_vertical <= RAIO_CRUZ)
+            */
+            if ((dist_vertical == 0 && dist_horizontal <= RAIO_CRUZ) || // Ramo horizontal
+                (dist_horizontal == 0 && dist_vertical <= RAIO_CRUZ)) { // Ramo vertical
+                    matrizHabilidade[i][j] = 1;
+            }
         }
     }
+        break;
+
+    case 3: //habilidade Octaedro
+        int distancia; // Armazena a distância
+        #define RAIO_OCTAEDRO 2 // O raio do octaedro
+
+        // Estrutura de Repetição para Formar o Losango
+        for (i = 0; i < LINHAS; i++) {
+            for (j = 0; j < COLUNAS; j++) {
+            
+                // Calcular a distância vertical (|i - linha_do_centro_do_octaedro|)
+                int dist_vertical = abs(i - linha);
+            
+                // Calcular a distância horizontal (|j - coluna_do_centro_do_octaedro|)
+                int dist_horizontal = abs(j - coluna);
+            
+                // A Distância de Manhattan é a soma das distâncias vertical e horizontal.
+                distancia = dist_vertical + dist_horizontal;
+
+                // Se a distância for menor ou igual ao RAIO, 
+                //    o ponto faz parte do losango e deve ser 1.
+                if (distancia <= RAIO_OCTAEDRO) {
+                    matrizHabilidade[i][j] = 1;
+                }
+            }
+        }
+        break;
+    
+    default:
+        break;
+    }
+}
+
+int main(){
+    int tabuleiro[LINHAS][COLUNAS] = {0}; //Inicialização do tabuleiro como 0
+    int navio1[4], navio2[4], navio3[4], navio4[4]; //inicializando os navios
 
     //imprimindo o tabuleiro inicial
     printf("TABULEIRO INICIALIZADO\n");
@@ -229,4 +315,16 @@ int main(){
     printf("TABULEIRO COM TODOS OS NAVIOS POSICIONADOS\n");
     imprimirTabuleiro(tabuleiro);    
     printf("\n");
+
+    //chamada da função para aplicar habilidades ao tabuleiro
+        /* Parâmetros: 
+            Opção da habilidade: 1: Cone / 2: Cruz / 3: Octaedro
+            Linha e Coluna: coordenadas do topo do cone ou centro da cruz/octaedro
+            Matriz: matriz onde será aplicada a habilidade
+        */
+    aplicarHabilidade(2, 4, 4, tabuleiro); //tipo: cone, topo: lin.7 col.4
+
+    //imprimindo o tabuleiro após aplicação da habilidade
+    printf("TABULEIRO APÓS USO DA HABILIDADE\n");
+    imprimirTabuleiro(tabuleiro);
 }
